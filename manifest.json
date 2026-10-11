@@ -8,5 +8,6 @@
   "short_name": "TOH",
   "start_url": "/",
   "theme_color": "#ffffff",
-  "id": "tower of legends"
+  "id": "tower of legends",
+  "description": "Tower of Hanoi Stack Puzzle"
 }
