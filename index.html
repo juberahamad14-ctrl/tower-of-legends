@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Legends - Working Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@400;600&display=swap');
+
+        :root {
+            --bg-dark: #070913;
+            --panel-bg: #0f172a;
+            --accent: #00f2fe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --pink-glow: rgba(255, 0, 128, 0.4);
+            --text-main: #f3f4f6;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(15, 23, 42, 0.9) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(49, 10, 76, 0.6) 0%, transparent 40%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            background-color: var(--panel-bg);
+            border: 2px solid #1e293b;
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 750px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 2px 0;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            margin-top: 0;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            background: rgba(3, 7, 18, 0.7);
+            border: 1px solid #334155;
+            padding: 8px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        .hud-item {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .hud-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-top: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        select {
+            background: #1e293b;
+            color: white;
+            border: 1px solid #475569;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .btn-game {
+            background: linear-gradient(135deg, #ff0080, #7928ca);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--pink-glow);
+            transition: all 0.2s ease;
+        }
+
+        .btn-game:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .board {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            height: 260px;
+            border-bottom: 6px solid #475569;
+            position: relative;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 10px 10px 0 0;
+            box-sizing: border-box;
+        }
+
+        .tower-pillar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 30%;
+            position: relative;
+            height: 100%;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+
+        .tower-pillar:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .tower-pillar.active-selection {
+            background-color: rgba(0, 242, 254, 0.08);
+            border: 2px dashed var(--accent);
+        }
+
+        .pole-rod {
+            width: 8px;
+            height: 230px;
+            background: linear-gradient(to right, #334155, #94a3b8, #334155);
+            position: absolute;
+            bottom: 0;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .pillar-name {
+            position: absolute;
+            bottom: -28px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .disks-stack {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 230px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .disk-item {
+            height: 20px;
+            border-radius: 10px;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .disks-stack .disk-item:last-child {
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 10px var(--accent);
+            transform: scale(1.03);
+        }
+
+        .game-status-log {
+            width: 100%;
+            background: #030712;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.78rem;
+            color: #38bdf8;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pause-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 9, 19, 0.9);
+            backdrop-filter: blur(5px);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 20px;
+        }
+
+        .pause-overlay h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #f59e0b;
+            margin-bottom: 15px;
+        }
+
+        .victory-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .victory-card {
+            background: #0f172a;
+            border: 2px solid var(--accent);
+            padding: 25px;
+            border-radius: 18px;
+            text-align: center;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .victory-card h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div class="pause-overlay" id="pauseOverlay">
+            <h2>GAME PAUSED</h2>
+            <button class="btn-game" onclick="resumeGame()">▶ Resume Game</button>
+        </div>
+
+        <h1>TOWER OF LEGENDS</h1>
+        <p class="subtitle">100% Working Interactive Game</p>
+
+        <div class="hud">
+            <div class="hud-item">
+                MOVES
+                <div class="hud-value" id="moveCount">0</div>
+            </div>
+            <div class="hud-item">
+                BEST SCORE
+                <div class="hud-value" id="bestScore">-</div>
+            </div>
+            <div class="hud-item">
+                TIME
+                <div class="hud-value" id="timer">00:00</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <select id="diskCountSelect" onchange="startNewGame()">
+                <option value="3">3 Rings</option>
+                <option value="4">4 Rings</option>
+                <option value="5">5 Rings</option>
+                <option value="6" selected>6 Rings</option>
+                <option value="7">7 Rings</option>
+                <option value="8">8 Rings</option>
+                <option value="9">9 Rings</option>
+                <option value="10">10 Rings</option>
+            </select>
+            <button class="btn-game btn-pause" id="pauseBtn" onclick="pauseGame()" disabled>⏸ Pause</button>
+            <button class="btn-game" onclick="startNewGame()">🔄 Reset</button>
+        </div>
+
+        <div class="board">
+            <div class="tower-pillar" id="pillar-0" onclick="handlePillarClick(0)">
+                <div class="pole-rod"></div>
+                <div class="disks-stack" id="stack-0"></div>
+                <div class="pillar-name">TOWER I</div>
+            </div>
+            <div class="tower-pillar" id="pillar-1" onclick="handlePillarClick(1)">
+                <div class="pole-rod"></div>
+                <div class="disks-stack" id="stack-1"></div>
+                <div class="pillar-name">TOWER II</div>
+            </div>
+            <div class="tower-pillar" id="pillar-2" onclick="handlePillarClick(2)">
+                <div class="pole-rod"></div>
+                <div class="disks-stack" id="stack-2"></div>
+                <div class="pillar-name">TARGET III</div>
+            </div>
+        </div>
+
+        <div class="game-status-log" id="statusMessage">
+            Game shuru karne ke liye Tower I ki kisi ring par click karein!
+        </div>
+    </div>
+
+    <div class="victory-overlay" id="victoryModal">
+        <div class="victory-card">
+            <h2>🎉 LEGENDARY WIN!</h2>
+            <p id="victoryText" style="color: #94a3b8; font-size: 0.85rem; margin: 12px 0;"></p>
+            <button class="btn-game" onclick="startNewGame(); closeModal();">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const neonColors = [
+            'linear-gradient(90deg, #ff416c, #ff4b2b)',
+            'linear-gradient(90deg, #f7b733, #fc4a1a)',
+            'linear-gradient(90deg, #f59e0b, #d97706)',
+            'linear-gradient(90deg, #00b09b, #96c93d)',
+            'linear-gradient(90deg, #10b981, #047857)',
+            'linear-gradient(90deg, #2193b0, #6dd5ed)',
+            'linear-gradient(90deg, #3b82f6, #1d4ed8)',
+            'linear-gradient(90deg, #cc2b5e, #753a88)',
+            'linear-gradient(90deg, #8b5cf6, #5b21b6)',
+            'linear-gradient(90deg, #ec4899, #be185d)'
+        ];
+
+        let towers = [[], [], []];
+        let totalDisks = 6;
+        let movesCount = 0;
+        let selectedTower = -1;
+        let secondsElapsed = 0;
+        let timerInstance = null;
+        let gameStarted = false;
+        let isPaused = false;
+
+        const diskSelect = document.getElementById('diskCountSelect');
+        const moveDisplay = document.getElementById('moveCount');
+        const bestScoreDisplay = document.getElementById('bestScore');
+        const timerDisplay = document.getElementById('timer');
+        const statusMsg = document.getElementById('statusMessage');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const pauseOverlay = document.getElementById('pauseOverlay');
+        const victoryModal = document.getElementById('victoryModal');
+        const victoryText = document.getElementById('victoryText');
+
+        function startTimer() {
+            if (timerInstance) clearInterval(timerInstance);
+            timerInstance = setInterval(() => {
+                if (!isPaused && gameStarted) {
+                    secondsElapsed++;
+                    updateTimerDisplay();
+                    saveGame();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+            let s = (secondsElapsed % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `${m}:${s}`;
+        }
+
+        function pauseGame() {
+            if (!gameStarted || isPaused) return;
+            isPaused = true;
+            pauseOverlay.style.display = 'flex';
+            pauseBtn.innerText = "▶ Resume";
+            statusMsg.innerText = "Game pause kar diya gaya hai.";
+        }
+
+        function resumeGame() {
+            isPaused = false;
+            pauseOverlay.style.display = 'none';
+            pauseBtn.innerText = "⏸ Pause";
+            statusMsg.innerText = "Game resume ho gaya!";
+        }
+
+        function saveGame() {
+            let data = { towers, totalDisks, movesCount, secondsElapsed, gameStarted };
+            localStorage.setItem('working_hanoi_save', JSON.stringify(data));
+        }
+
+        function loadGame() {
+            let saved = localStorage.getItem('working_hanoi_save');
+            if (saved) {
+                try {
+                    let data = JSON.parse(saved);
+                    if (data && Array.isArray(data.towers) && data.towers.length === 3) {
+                        towers = data.towers;
+                        totalDisks = data.totalDisks || 6;
+                        movesCount = data.movesCount || 0;
+                        secondsElapsed = data.secondsElapsed || 0;
+                        gameStarted = data.gameStarted || false;
+                        diskSelect.value = totalDisks;
+                        moveDisplay.innerText = movesCount;
+                        updateTimerDisplay();
+                        
+                        if (gameStarted) {
+                            pauseBtn.disabled = false;
+                            startTimer();
+                        }
+                        renderBoard();
+                        return true;
+                    }
+                } catch(e) {
+                    console.error("Save load error:", e);
+                }
+            }
+            return false;
+        }
+
+        function startNewGame() {
+            if (timerInstance) clearInterval(timerInstance);
+            localStorage.removeItem('working_hanoi_save');
+            
+            totalDisks = parseInt(diskSelect.value);
+            towers = [[], [], []];
+            movesCount = 0;
+            selectedTower = -1;
+            secondsElapsed = 0;
+            gameStarted = false;
+            isPaused = false;
+            
+            pauseBtn.disabled = true;
+            pauseBtn.innerText = "⏸ Pause";
+            pauseOverlay.style.display = 'none';
+            moveDisplay.innerText = movesCount;
+            timerDisplay.innerText = "00:00";
+            statusMsg.innerText = `Naya game shuru! Tower I se ring chunein.`;
+
+            let best = localStorage.getItem(`hanoi_best_${totalDisks}`);
+            bestScoreDisplay.innerText = best ? best : '-';
+
+            for (let i = totalDisks; i >= 1; i--) {
+                towers[0].push(i);
+            }
+            renderBoard();
+        }
+
+        function renderBoard() {
+            for (let i = 0; i < 3; i++) {
+                const stackContainer = document.getElementById(`stack-${i}`);
+                const pillarEl = document.getElementById(`pillar-${i}`);
+                stackContainer.innerHTML = '';
+
+                if (i === selectedTower) {
+                    pillarEl.classList.add('active-selection');
+                } else {
+                    pillarEl.classList.remove('active-selection');
+                }
+
+                if (towers[i] && Array.isArray(towers[i])) {
+                    towers[i].forEach(diskSize => {
+                        const diskDiv = document.createElement('div');
+                        diskDiv.classList.add('disk-item');
+                        let widthPx = 35 + (diskSize / totalDisks) * 135;
+                        diskDiv.style.width = `${widthPx}px`;
+                        diskDiv.style.background = neonColors[(diskSize - 1) % neonColors.length];
+                        diskDiv.innerText = diskSize;
+                        stackContainer.appendChild(diskDiv);
+                    });
+                }
+            }
+        }
+
+        function handlePillarClick(towerIndex) {
+            if (isPaused) return;
+
+            if (!gameStarted) {
+                gameStarted = true;
+                pauseBtn.disabled = false;
+                startTimer();
+            }
+
+            let towerNames = ['Tower I', 'Tower II', 'Target III'];
+
+            if (selectedTower === -1) {
+                if (!towers[towerIndex] || towers[towerIndex].length === 0) {
+                    statusMsg.innerText = `⚠️ ${towerNames[towerIndex]} khali hai!`;
+                    return;
+                }
+                selectedTower = towerIndex;
+                let activeRing = towers[selectedTower][towers[selectedTower].length - 1];
+                statusMsg.innerText = `Ring #${activeRing} utha li gayi hai. Destination tower chunein.`;
+            } else {
+                if (selectedTower === towerIndex) {
+                    selectedTower = -1;
+                    statusMsg.innerText = "Selection cancel ho gayi.";
+                    renderBoard();
+                    return;
+                }
+
+                let sourceStack = towers[selectedTower];
+                let destStack = towers[towerIndex];
+                let movingRing = sourceStack[sourceStack.length - 1];
+
+                if (destStack.length === 0 || destStack[destStack.length - 1] > movingRing) {
+                    sourceStack.pop();
+                    destStack.push(movingRing);
+
+                    movesCount++;
+                    moveDisplay.innerText = movesCount;
+                    statusMsg.innerText = `Sahi move! Ring ${movingRing} ko ${towerNames[towerIndex]} par rakha gaya.`;
+                    selectedTower = -1;
+                    saveGame();
+
+                    if (towers[2].length === totalDisks) {
+                        clearInterval(timerInstance);
+                        gameStarted = false;
+                        localStorage.removeItem('working_hanoi_save');
+
+                        let best = localStorage.getItem(`hanoi_best_${totalDisks}`);
+                        if (!best || movesCount < parseInt(best)) {
+                            localStorage.setItem(`hanoi_best_${totalDisks}`, movesCount);
+                            bestScoreDisplay.innerText = movesCount;
+                        }
+
+                        victoryText.innerHTML = `Shandaar! Aapne ${movesCount} moves aur ${timerDisplay.innerText} mein puzzle solve kar liya!`;
+                        victoryModal.style.display = 'flex';
+            }
+                } else {
+                    statusMsg.innerText = `❌ Invalid Move! Badi ring choti ring ke upar nahi aa sakti.`;
+                    selectedTower = -1;
+                }
+            }
+            renderBoard();
+        }
+
+        function closeModal() {
+            victoryModal.style.display = 'none';
+        }
+
+        window.onload = function() {
+            if (!loadGame()) {
+                startNewGame();
+            } else {
+                let best = localStorage.getItem(`hanoi_best_${totalDisks}`);
+                bestScoreDisplay.innerText = best ? best : '-';
+            }
+        };
+    </script>
+</body>
+</html>
