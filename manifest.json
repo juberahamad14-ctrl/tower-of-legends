@@ -1,0 +1,11 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Tower-of-legends",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "TOH",
+  "start_url": "/",
+  "theme_color": "#ffffff"
+}
